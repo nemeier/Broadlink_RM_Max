@@ -1,0 +1,13 @@
+{
+  "domain": "broadlink_rm_max",
+  "name": "Broadlink RM Max",
+  "codeowners": ["@nemeier"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/nemeier/Broadlink_RM_Max",
+  "integration_type": "helper",
+  "iot_class": "assumed_state",
+  "issue_tracker": "https://github.com/nemeier/Broadlink_RM_Max/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

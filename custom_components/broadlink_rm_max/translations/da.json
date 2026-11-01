@@ -1,0 +1,14 @@
+{
+  "title": "Broadlink RM Max",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Broadlink RM Max",
+        "description": "Tilf\u00f8j Broadlink RM Max?"
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Der kan kun oprettes \u00e9n installation af Broadlink RM Max."
+    }
+  }
+}
