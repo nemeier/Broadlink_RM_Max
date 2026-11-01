@@ -1,6 +1,6 @@
 # Broadlink RM Max
 
-An independently installable Home Assistant custom integration. Version 0.2.0
+An independently installable Home Assistant custom integration. Version 0.2.1
 accepts an IP address or hostname, tests local discovery and authentication, and
 registers the verified RM Max as a device. It provides no entities, services,
 IR/RF commands, Bluetooth control, or periodic polling.
@@ -35,7 +35,7 @@ should appear after installation.
 
 ## Upgrade from version 0.1.0
 
-Replace the integration folder with version 0.2.0 and restart Home Assistant.
+Replace the integration folder with the current version and restart Home Assistant.
 The old, empty entry cannot establish a connection until an address is entered.
 In **Settings > Devices & services**, open the existing Broadlink RM Max entry's
 menu and select **Reconfigure**, then enter the address. The connection is tested
@@ -50,11 +50,24 @@ The form distinguishes invalid addresses, DNS failures, network timeouts,
 unsupported device types, rejected authentication, and invalid protocol replies.
 Discovery alone does not prove authenticated communication.
 
+Version 0.2.1 records connection-test failures as warnings in the Home Assistant
+log under `custom_components.broadlink_rm_max.config_flow`. Authentication
+diagnostics include the stage, device error code (hexadecimal and signed decimal),
+and response length. Raw packets, session IDs, and AES keys are never logged.
+For example, `device_error=0xffff (-1); response_length=56` means the device
+returned an authentication error without a session payload. It does not establish
+that the device is locked or that an app unlock setting exists.
+
 RM Max authentication is not universally confirmed. Community reports include
 both successful local control and rejected authentication on firmware V62130.
 This integration tests the known local Broadlink handshake; it does not bypass
 device locks, change firmware, or guarantee compatibility with every RM Max.
 No IR/RF commands are sent during the connection test.
+
+When reporting an authentication failure, include the warning plus firmware,
+SDK version, and PID from the manufacturer's app. Do not include passwords,
+tokens, or session keys. Version 0.2.1 improves diagnostics, not authentication
+compatibility.
 
 Protocol references:
 

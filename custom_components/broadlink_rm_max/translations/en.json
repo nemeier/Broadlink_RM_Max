@@ -22,7 +22,7 @@
       "cannot_resolve": "The hostname could not be resolved to an IPv4 address.",
       "cannot_connect": "No response received. Check the address and UDP port 80 access.",
       "unsupported_device": "The device did not identify as a supported RM Max (0xAF8B).",
-      "auth_failed": "The device rejected local authentication or did not return a valid session. This RM Max firmware or access configuration may not support this authentication method.",
+      "auth_failed": "The device rejected local authentication or did not return a valid session. Check the Home Assistant log for diagnostic details. This does not necessarily mean the device is locked.",
       "invalid_response": "The device returned an incomplete or invalid protocol response."
     },
     "abort": {

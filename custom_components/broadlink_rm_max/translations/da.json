@@ -22,7 +22,7 @@
       "cannot_resolve": "Hostname kunne ikke overs\u00e6ttes til en IPv4-adresse.",
       "cannot_connect": "Intet svar fra enheden. Kontroller adressen og adgang til UDP-port 80.",
       "unsupported_device": "Enheden identificerede sig ikke som en underst\u00f8ttet RM Max (0xAF8B).",
-      "auth_failed": "Enheden afviste lokal godkendelse eller returnerede ikke en gyldig session. Denne firmware eller adgangsops\u00e6tning underst\u00f8tter muligvis ikke godkendelsesmetoden.",
+      "auth_failed": "Enheden afviste lokal godkendelse eller returnerede ikke en gyldig session. Se Home Assistant-loggen for diagnostik. Det betyder ikke n\u00f8dvendigvis, at enheden er l\u00e5st.",
       "invalid_response": "Enheden returnerede et ufuldst\u00e6ndigt eller ugyldigt protokolsvar."
     },
     "abort": {

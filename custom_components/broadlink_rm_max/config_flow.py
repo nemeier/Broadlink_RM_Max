@@ -1,5 +1,6 @@
 """Configuration flow for Broadlink RM Max."""
 
+import logging
 from typing import Any
 
 import voluptuous as vol
@@ -10,6 +11,8 @@ from homeassistant.data_entry_flow import FlowResult
 
 from .connection import ConnectionFailure, test_connection
 from .const import DOMAIN
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class BroadlinkRMMaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -47,6 +50,7 @@ class BroadlinkRMMaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 device = await self.hass.async_add_executor_job(test_connection, host)
             except ConnectionFailure as err:
+                _LOGGER.warning("Connection test failed for %s: %s", host, err)
                 errors[
                     CONF_HOST
                     if err.reason in ("invalid_host", "cannot_resolve")

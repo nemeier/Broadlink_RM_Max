@@ -178,6 +178,30 @@ class InstallationTests(HomeAssistantTestCase):
         self.assertEqual(self.flow.reconfigure_entry.data["host"], "192.168.1.50")
         self.assertEqual(self.flow.reconfigure_entry.unique_id, "112233445566")
 
+    async def test_authentication_failure_logs_safe_diagnostics(self):
+        connection = importlib.import_module(
+            "custom_components.broadlink_rm_max.connection"
+        )
+        self.flow.hass.async_add_executor_job.side_effect = (
+            connection.ConnectionFailure(
+                "auth_failed",
+                stage="authentication",
+                error_code=0xFFF9,
+                response_length=56,
+                detail="device_rejected_authentication",
+            )
+        )
+        with self.assertLogs(
+            "custom_components.broadlink_rm_max.config_flow", level="WARNING"
+        ) as captured:
+            result = await self.flow.async_step_user({"host": "rm-max.local"})
+        self.assertEqual(result["errors"], {"base": "auth_failed"})
+        self.assertIn("device_error=0xfff9 (-7)", captured.output[0])
+        self.assertIn("response_length=56", captured.output[0])
+        self.assertIn("stage=authentication", captured.output[0])
+        self.assertNotIn(connection.INITIAL_KEY.hex(), captured.output[0])
+        self.assertNotIn(connection.INITIAL_IV.hex(), captured.output[0])
+
     async def test_reconfigure_rejects_different_device(self):
         connection = importlib.import_module(
             "custom_components.broadlink_rm_max.connection"
@@ -349,20 +373,31 @@ class ConnectionTests(HomeAssistantTestCase):
         self.assertEqual(self.conn.send.call_count, 1)
 
     def test_rejects_auth_error(self):
-        self.conn.recv.side_effect = [
-            self.discovery_response(),
-            self.auth_response(error=0xFFF9),
-        ]
-        with self.assertRaisesRegex(self.connection.ConnectionFailure, "auth_failed"):
-            self.connection.test_connection("192.168.1.50")
+        for error_code in (0xFFFF, 0xFFF9):
+            with self.subTest(error_code=error_code):
+                self.conn.recv.side_effect = [
+                    self.discovery_response(),
+                    self.auth_response(error=error_code),
+                ]
+                with self.assertRaisesRegex(
+                    self.connection.ConnectionFailure, "auth_failed"
+                ) as raised:
+                    self.connection.test_connection("192.168.1.50")
+                self.assertEqual(raised.exception.error_code, error_code)
+                self.assertEqual(raised.exception.response_length, 56)
+                self.assertEqual(raised.exception.stage, "authentication")
+                self.assertIn("device_rejected_authentication", str(raised.exception))
 
     def test_rejects_missing_session_key(self):
         self.conn.recv.side_effect = [
             self.discovery_response(),
             self.auth_response(missing_key=True),
         ]
-        with self.assertRaisesRegex(self.connection.ConnectionFailure, "auth_failed"):
+        with self.assertRaisesRegex(
+            self.connection.ConnectionFailure, "missing_session_key"
+        ) as raised:
             self.connection.test_connection("192.168.1.50")
+        self.assertIsNone(raised.exception.error_code)
 
     def test_rejects_bad_checksum(self):
         response = bytearray(self.discovery_response())
@@ -419,7 +454,7 @@ class PackageTests(unittest.TestCase):
         self.assertTrue(manifest["config_flow"])
         self.assertEqual(manifest["dependencies"], [])
         self.assertEqual(manifest["requirements"], [])
-        self.assertEqual(manifest["version"], "0.2.0")
+        self.assertEqual(manifest["version"], "0.2.1")
         for source in COMPONENT.glob("*.py"):
             tree = ast.parse(source.read_text())
             for node in ast.walk(tree):

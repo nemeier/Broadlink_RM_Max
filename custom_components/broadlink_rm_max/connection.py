@@ -22,9 +22,30 @@ MAGIC = bytes.fromhex("5aa5aa555aa5aa55")
 class ConnectionFailure(Exception):
     """Expose a safe, translatable connection error."""
 
-    def __init__(self, reason: str) -> None:
-        super().__init__(reason)
+    def __init__(
+        self,
+        reason: str,
+        *,
+        stage: str | None = None,
+        error_code: int | None = None,
+        response_length: int | None = None,
+        detail: str | None = None,
+    ) -> None:
         self.reason = reason
+        self.stage = stage
+        self.error_code = error_code
+        self.response_length = response_length
+        diagnostics = [reason]
+        if stage:
+            diagnostics.append(f"stage={stage}")
+        if error_code is not None:
+            signed_code = error_code if error_code < 0x8000 else error_code - 0x10000
+            diagnostics.append(f"device_error=0x{error_code:04x} ({signed_code})")
+        if response_length is not None:
+            diagnostics.append(f"response_length={response_length}")
+        if detail:
+            diagnostics.append(detail)
+        super().__init__("; ".join(diagnostics))
 
 
 @dataclass(frozen=True)
@@ -109,22 +130,59 @@ def _authenticate(conn: socket.socket, device: DeviceInfo) -> None:
     packet.extend(encrypted)
     struct.pack_into("<H", packet, 0x20, _checksum(packet))
     response = _exchange(conn, packet)
-    _validate_checksum(response)
-    if int.from_bytes(response[0x22:0x24], "little") != 0:
-        raise ConnectionFailure("auth_failed")
+    try:
+        _validate_checksum(response)
+    except ConnectionFailure as err:
+        raise ConnectionFailure(
+            err.reason,
+            stage="authentication",
+            response_length=len(response),
+            detail="invalid_packet_checksum_or_length",
+        ) from err
+    error_code = int.from_bytes(response[0x22:0x24], "little")
+    if error_code != 0:
+        raise ConnectionFailure(
+            "auth_failed",
+            stage="authentication",
+            error_code=error_code,
+            response_length=len(response),
+            detail="device_rejected_authentication",
+        )
     if (
         len(response) < 0x58
         or response[:8] != MAGIC
         or int.from_bytes(response[0x26:0x28], "little") != 0x66
         or (len(response) - 0x38) % 16
     ):
-        raise ConnectionFailure("invalid_response")
+        raise ConnectionFailure(
+            "invalid_response",
+            stage="authentication",
+            response_length=len(response),
+            detail="invalid_authentication_reply_structure",
+        )
     decryptor = cipher.decryptor()
     decoded = decryptor.update(response[0x38:]) + decryptor.finalize()
     if int.from_bytes(response[0x34:0x36], "little") != _checksum(decoded):
-        raise ConnectionFailure("invalid_response")
-    if decoded[:4] == bytes(4) or decoded[4:20] == bytes(16):
-        raise ConnectionFailure("auth_failed")
+        raise ConnectionFailure(
+            "invalid_response",
+            stage="authentication",
+            response_length=len(response),
+            detail="invalid_decrypted_payload_checksum",
+        )
+    if decoded[:4] == bytes(4):
+        raise ConnectionFailure(
+            "auth_failed",
+            stage="authentication",
+            response_length=len(response),
+            detail="missing_session_id",
+        )
+    if decoded[4:20] == bytes(16):
+        raise ConnectionFailure(
+            "auth_failed",
+            stage="authentication",
+            response_length=len(response),
+            detail="missing_session_key",
+        )
 
 
 def test_connection(host: str) -> DeviceInfo:
