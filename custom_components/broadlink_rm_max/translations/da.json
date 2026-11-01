@@ -4,11 +4,31 @@
     "step": {
       "user": {
         "title": "Broadlink RM Max",
-        "description": "Tilf\u00f8j Broadlink RM Max?"
+        "description": "Opret forbindelse til Broadlink RM Max.",
+        "data": {
+          "host": "IP-adresse eller hostname"
+        }
+      },
+      "reconfigure": {
+        "title": "Broadlink RM Max",
+        "description": "Opdater forbindelsen til Broadlink RM Max.",
+        "data": {
+          "host": "IP-adresse eller hostname"
+        }
       }
     },
+    "error": {
+      "invalid_host": "Angiv en IPv4-adresse eller et hostname uden URL eller port.",
+      "cannot_resolve": "Hostname kunne ikke overs\u00e6ttes til en IPv4-adresse.",
+      "cannot_connect": "Intet svar fra enheden. Kontroller adressen og adgang til UDP-port 80.",
+      "unsupported_device": "Enheden identificerede sig ikke som en underst\u00f8ttet RM Max (0xAF8B).",
+      "auth_failed": "Enheden afviste lokal godkendelse eller returnerede ikke en gyldig session. Denne firmware eller adgangsops\u00e6tning underst\u00f8tter muligvis ikke godkendelsesmetoden.",
+      "invalid_response": "Enheden returnerede et ufuldst\u00e6ndigt eller ugyldigt protokolsvar."
+    },
     "abort": {
-      "single_instance_allowed": "Der kan kun oprettes \u00e9n installation af Broadlink RM Max."
+      "single_instance_allowed": "Der kan kun oprettes \u00e9n installation af Broadlink RM Max. Genkonfigurer den eksisterende installation for at angive adressen.",
+      "already_configured": "Denne RM Max er allerede konfigureret.",
+      "wrong_device": "Adressen tilh\u00f8rer en anden enhed. Angiv adressen p\u00e5 den oprindeligt konfigurerede RM Max."
     }
   }
 }

@@ -4,11 +4,31 @@
     "step": {
       "user": {
         "title": "Broadlink RM Max",
-        "description": "Add Broadlink RM Max?"
+        "description": "Connect to Broadlink RM Max.",
+        "data": {
+          "host": "IP address or hostname"
+        }
+      },
+      "reconfigure": {
+        "title": "Broadlink RM Max",
+        "description": "Update the Broadlink RM Max connection.",
+        "data": {
+          "host": "IP address or hostname"
+        }
       }
     },
+    "error": {
+      "invalid_host": "Enter an IPv4 address or hostname without a URL or port.",
+      "cannot_resolve": "The hostname could not be resolved to an IPv4 address.",
+      "cannot_connect": "No response received. Check the address and UDP port 80 access.",
+      "unsupported_device": "The device did not identify as a supported RM Max (0xAF8B).",
+      "auth_failed": "The device rejected local authentication or did not return a valid session. This RM Max firmware or access configuration may not support this authentication method.",
+      "invalid_response": "The device returned an incomplete or invalid protocol response."
+    },
     "abort": {
-      "single_instance_allowed": "Only one installation of Broadlink RM Max is allowed."
+      "single_instance_allowed": "Only one installation of Broadlink RM Max is allowed. Reconfigure the existing installation to set its address.",
+      "already_configured": "This RM Max is already configured.",
+      "wrong_device": "The address belongs to a different device. Enter the address of the originally configured RM Max."
     }
   }
 }
